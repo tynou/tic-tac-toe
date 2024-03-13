@@ -1,3 +1,17 @@
+const Player = (sign) => {
+    let _sign = sign;
+
+    const getSign = () => {
+        return _sign;
+    }
+
+    const setSign = (newSign) => {
+        _sign = newSign;
+    }
+
+    return { getSign, setSign };
+}
+
 const Gameboard = (() => {
     let _board = Array(9).fill(0);
 
@@ -11,6 +25,7 @@ const Gameboard = (() => {
         const icon = document.querySelector(`.cell:nth-child(${i + 1}) i`);
         icon.classList.add("fa-solid");
         icon.classList.add(player.getSign() === "x" ? "fa-xmark" : "fa-o");
+        icon.classList.add("active");
     }
 
     const getEmptyCells = () => {
@@ -30,26 +45,25 @@ const Gameboard = (() => {
     return { getBoard, getCell, setCell, getEmptyCells, clear };
 })();
 
-const Player = (sign) => {
-    let _sign = sign;
-
-    const getSign = () => {
-        return _sign;
-    }
-
-    const setSign = (newSign) => {
-        _sign = newSign;
-    }
-
-    return { getSign, setSign };
-}
-
 const GameLogic = (() => {
+    const screenBlur = document.getElementById("screen-blur");
+    const endScreen = document.getElementById("end-screen");
+    const endMsg = document.getElementById("end-msg");
+
     const _player = Player("x");
     const _bot = Player("o");
 
+    let pause = false;
+
     const changePlayerSign = (newSign) => {
+        if (pause) return;
+
         _player.setSign(newSign);
+
+        document.querySelector(`.sign-btn.x`).classList.remove("selected");
+        document.querySelector(`.sign-btn.o`).classList.remove("selected");
+        document.querySelector(`.sign-btn.${newSign}`).classList.add("selected");
+
         _bot.setSign(newSign === "x" ? "o" : "x");
 
         restart();
@@ -90,13 +104,23 @@ const GameLogic = (() => {
         }
     }
 
+    // const _sleep = (ms) => {
+    //     return new Promise(resolve => setTimeout(resolve, ms));
+    // }
+
     const playerStep = (i) => {
+        if (pause) return;
+
         const cell = Gameboard.getCell(i);
         if (!cell) {
             Gameboard.setCell(i, _player);
             const gameStatus = getGameStatus();
             switch (gameStatus) {
                 case 0:
+                    // (async () => {
+                    //     await _sleep(250 + (Math.random() * 300));
+                    //     botStep();
+                    // })();
                     botStep();
                     break;
                 case 1:
@@ -127,21 +151,35 @@ const GameLogic = (() => {
     }
 
     const endGame = (gameStatus, sign) => {
-        restart();
+        pause = true;
 
         switch (gameStatus) {
             case 0:
-                console.log(`${sign} won`);
+                endMsg.textContent = sign === _player.getSign() ? "you won" : "you lost";
                 break;
             case 1:
-                console.log("it's a draw");
+                endMsg.textContent = "it's a draw"
                 break;
         }
+
+        setTimeout(
+            () => {
+                screenBlur.classList.add("active");
+                endScreen.classList.add("active")
+                pause = false;
+            },
+            500
+        );
     }
 
     const restart = () => {
+        if (pause) return;
+
         Gameboard.clear();
         DisplayController.clear();
+
+        screenBlur.classList.remove("active");
+        endScreen.classList.remove("active");
 
         if (_player.getSign() === "o") botStep();
     }
@@ -155,23 +193,25 @@ const DisplayController = (() => {
     const x = document.getElementById("x-btn");
     const o = document.getElementById("o-btn");
 
+    const retryBtn = document.getElementById("retry-btn");
+
     const clear = () => {
         for (let cell of cells) {
-            const icon = cell.firstChild;
-            icon.classList = [];
+            cell.firstChild.classList = [];
         }
     }
 
     for (let i = 0; i < cells.length; i++) {
-        const cell = cells[i];
-        cell.addEventListener("click", GameLogic.playerStep.bind(null, i));
+        cells[i].onclick = GameLogic.playerStep.bind(null, i);
     }
 
     restart.onclick = GameLogic.restart;
     x.onclick = GameLogic.changePlayerSign.bind(null, "x");
     o.onclick = GameLogic.changePlayerSign.bind(null, "o");
 
-    clear();
+    retryBtn.onclick = GameLogic.restart;
 
     return { clear };
 })();
+
+GameLogic.changePlayerSign("x");

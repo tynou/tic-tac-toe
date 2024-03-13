@@ -5,30 +5,222 @@
 }
 
 :root {
-    --light: #c7d1d8;
+    --dim: #c6d3dd;
+    --light: #e2e7eb;
     --white: #f8feff;
-    --black: #000000;
+    --dark: #0f172e;
+
+    --br: 10px;
 }
 
 html {
     font-family: "Poppins", sans-serif;
-    color: var(--black);
+    color: var(--dark);
+}
+
+body {
+    background-color: var(--light);
+
+    min-height: 100vh;
+}
+
+button {
+    height: 2rem;
+    border-radius: var(--br);
+    border: 2px solid var(--dim);
+    background-color: var(--light);
+
+    color: inherit;
+
+    transition: 200ms ease-in-out;
+}
+
+button:hover {
+    transform: scale(0.96);
+    box-shadow: 0px 0px 8px 1px var(--dim);
+}
+
+i {
+    color: var(--dark);
+}
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 100vh;
+}
+
+.game {
+    background-color: var(--white);
+    border-radius: var(--br);
+    padding: 3rem;
+    min-width: 250px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    box-shadow: 0px 0px 10px 0px var(--dark);
+}
+
+.sign-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.selection-text {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.selection-btns {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.sign-btn {
+    height: 2rem;
+    aspect-ratio: 1/1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-style: dashed;
+}
+
+.sign-btn.selected {
+    transform: scale(1.2);
+    border-style: solid;
+}
+
+.sign-btn.x, .sign-btn.o {
+    font-size: 1rem;
+}
+
+.sign-btn.x {
+    font-size: 1.1rem;
 }
 
 .board {
     display: grid;
     grid-template: repeat(3, 1fr) / repeat(3, 1fr);
     gap: 4px;
-    width: 128px;
+    aspect-ratio: 1/1;
+    width: 100%;
 }
 
 .cell {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
     background-color: var(--light);
 
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.cell.top-left-round {
+    border-top-left-radius: var(--br);
+}
+
+.cell.top-right-round {
+    border-top-right-radius: var(--br);
+}
+
+.cell.bottom-left-round {
+    border-bottom-left-radius: var(--br);
+}
+
+.cell.bottom-right-round {
+    border-bottom-right-radius: var(--br);
+}
+
+.cell i {
+    font-size: 1.5rem;
+    transform: scale(0);
+
+    transition: 300ms ease-in-out;
+}
+
+.cell i.active {
+    transform: scale(1);
+}
+
+.cell i.fa-xmark {
+    font-size: 1.6rem;
+}
+
+.restart-btn {
+    height: 2rem;
+    border-radius: var(--br);
+    border: 2px solid var(--dim);
+    background-color: var(--light);
+    width: 100%;
+    max-width: 100px;
+
+    transition: 200ms ease-in-out;
+}
+
+.restart-btn i {
+    color: inherit;
+    font-size: 1.25rem;
+}
+
+.screen-blur {
+    backdrop-filter: blur(10px);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    display: none;
+    opacity: 0;
+    transition: 500ms ease-in-out;
+}
+
+.screen-blur.active {
+    opacity: 1;
+    display: block;
+}
+
+.end-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+
+    background-color: var(--white);
+    border-radius: var(--br);
+    min-width: 250px;
+    padding: 2rem;
+    box-shadow: 0px 0px 10px 0px var(--dark);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    transform: translateX(-50%) translateY(-50%) scale(0);
+    transition: 200ms ease-in-out;
+}
+
+.end-screen.active {
+    transform: translateX(-50%) translateY(-50%) scale(1);
+}
+
+.end-msg {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.retry-btn {
+    height: 3rem;
+    width: 3rem;
+}
+
+.retry-btn i {
+    font-size: 1.5rem;
 }
