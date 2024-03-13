@@ -1,10 +1,16 @@
 const Gameboard = (() => {
-    let _board = Array(9);
+    let _board = Array(9).fill(0);
+
+    const getBoard = () => _board;
     
     const getCell = (i) => _board[i];
 
     const setCell = (i, player) => {
         _board[i] = player.getSign();
+
+        const icon = document.querySelector(`.cell:nth-child(${i + 1}) i`);
+        icon.classList.add("fa-solid");
+        icon.classList.add(player.getSign() === "x" ? "fa-xmark" : "fa-o");
     }
 
     const getEmptyCells = () => {
@@ -15,9 +21,13 @@ const Gameboard = (() => {
         return cells;
     }
 
-    const clear = () => _board.map(() => undefined);
+    const clear = () => {
+        for (let i = 0; i < _board.length; i++) {
+            _board[i] = 0
+        };
+    };
 
-    return { getCell, setCell, getEmptyCells, clear };
+    return { getBoard, getCell, setCell, getEmptyCells, clear };
 })();
 
 const Player = (sign) => {
@@ -38,18 +48,130 @@ const GameLogic = (() => {
     const _player = Player("x");
     const _bot = Player("o");
 
-    const playerStep = (i) => {
+    const changePlayerSign = (newSign) => {
+        _player.setSign(newSign);
+        _bot.setSign(newSign === "x" ? "o" : "x");
 
+        restart();
+    }
+
+    const _checkRows = () => {
+        for (let i = 0; i < 3; i++) {
+            const row = Gameboard.getBoard().slice(i * 3, i * 3 + 3);
+            if (row.every((cell) => cell == "x") || row.every((cell) => cell == "o")) return true;
+        }
+        return false;
+    }
+
+    const _checkColumns = () => {
+        for (let i = 0; i < 3; i++) {
+            const column = Gameboard.getBoard().filter((_, j) => (j - i) % 3 === 0);
+            if (column.every((cell) => cell == "x") || column.every((cell) => cell == "o")) return true;
+        }
+        return false;
+    }
+
+    const _checkDiagonals = () => {
+        const board = Gameboard.getBoard();
+        const d1 = [board[0], board[4], board[8]];
+        const d2 = [board[2], board[4], board[6]];
+
+        if (d1.every((cell) => cell == "x") || d1.every((cell) => cell == "o")) return true;
+        if (d2.every((cell) => cell == "x") || d2.every((cell) => cell == "o")) return true;
+
+        return false;
+    }
+
+    const getGameStatus = () => {
+        if (_checkRows() || _checkColumns() || _checkDiagonals()) {
+            return 1
+        } else {
+            return Gameboard.getEmptyCells().length !== 0 ? 0 : 2;
+        }
+    }
+
+    const playerStep = (i) => {
+        const cell = Gameboard.getCell(i);
+        if (!cell) {
+            Gameboard.setCell(i, _player);
+            const gameStatus = getGameStatus();
+            switch (gameStatus) {
+                case 0:
+                    botStep();
+                    break;
+                case 1:
+                    endGame(0, _player.getSign());
+                    break;
+                case 2:
+                    endGame(1);
+                    break;
+            }
+        }
     }
 
     const botStep = () => {
-
+        const emptyCells = Gameboard.getEmptyCells();
+        const randomI = emptyCells[Math.round(Math.random() * (emptyCells.length - 1))]
+        Gameboard.setCell(randomI, _bot);
+        const gameStatus = getGameStatus();
+        switch (gameStatus) {
+            case 0:
+                break;
+            case 1:
+                endGame(0, _bot.getSign());
+                break;
+            case 2:
+                endGame(1);
+                break;
+        }
     }
 
-    return {};
+    const endGame = (gameStatus, sign) => {
+        restart();
+
+        switch (gameStatus) {
+            case 0:
+                console.log(`${sign} won`);
+                break;
+            case 1:
+                console.log("it's a draw");
+                break;
+        }
+    }
+
+    const restart = () => {
+        Gameboard.clear();
+        DisplayController.clear();
+
+        if (_player.getSign() === "o") botStep();
+    }
+
+    return { changePlayerSign, playerStep, botStep, restart };
 })();
 
 const DisplayController = (() => {
+    const cells = document.querySelectorAll(".cell");
+    const restart = document.getElementById("restart-btn");
+    const x = document.getElementById("x-btn");
+    const o = document.getElementById("o-btn");
 
-    return {};
+    const clear = () => {
+        for (let cell of cells) {
+            const icon = cell.firstChild;
+            icon.classList = [];
+        }
+    }
+
+    for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        cell.addEventListener("click", GameLogic.playerStep.bind(null, i));
+    }
+
+    restart.onclick = GameLogic.restart;
+    x.onclick = GameLogic.changePlayerSign.bind(null, "x");
+    o.onclick = GameLogic.changePlayerSign.bind(null, "o");
+
+    clear();
+
+    return { clear };
 })();

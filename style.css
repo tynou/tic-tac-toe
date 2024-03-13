@@ -5,10 +5,30 @@
 }
 
 :root {
-    --white: #ffffff;
+    --light: #c7d1d8;
+    --white: #f8feff;
+    --black: #000000;
 }
 
 html {
     font-family: "Poppins", sans-serif;
-    color: var(--white);
+    color: var(--black);
+}
+
+.board {
+    display: grid;
+    grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+    gap: 4px;
+    width: 128px;
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--light);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

@@ -11,9 +11,37 @@
     </head>
     <body>
         <i class="fa-solid fa-rotate-right"></i>
+        <i class="fa-solid fa-xmark"></i>
+        <i class="fa-solid fa-o"></i>
 
         <div class="game">
+            <div class="sign-selection">
+                <p class="selection-text">Choose your sign:</p>
 
+                <button class="sign-btn x" id="x-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <button class="sign-btn o" id="o-btn">
+                    <i class="fa-solid fa-o"></i>
+                </button>
+            </div>
+
+            <div class="board" id="board">
+                <div class="cell left-top-round"><i></i></div>
+                <div class="cell"><i></i></div>
+                <div class="cell right-top-round"><i></i></div>
+                <div class="cell"><i></i></div>
+                <div class="cell"><i></i></div>
+                <div class="cell"><i></i></div>
+                <div class="cell left-bottom-round"><i></i></div>
+                <div class="cell"><i></i></div>
+                <div class="cell right-bottom-round"><i></i></div>
+            </div>
+
+            <button class="restart-btn" id="restart-btn">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
         </div>
 
         <div class="win-screen">
