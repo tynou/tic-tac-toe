@@ -7,14 +7,9 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css">
         <link rel="stylesheet" href="./style.css">
         <script src="./game.js" defer></script>
-        <title>tic tac toe</title>
+        <title>tic-tac-toe*</title>
     </head>
     <body>
-        <!--
-        <i class="fa-solid fa-rotate-right"></i>
-        <i class="fa-solid fa-xmark"></i>
-        <i class="fa-solid fa-o"></i>
-        -->
         <div class="game-container">
             <div class="game">
                 <div class="sign-selection">
@@ -28,6 +23,15 @@
                         <button class="sign-btn o" id="o-btn">
                             <i class="fa-solid fa-o"></i>
                         </button>
+                    </div>
+                </div>
+
+                <div class="size-selection">
+                    <p class="selection-text">Grid size:</p>
+    
+                    <div class="size-selection-container">
+                        <p id="slider-text" class="size-label">3x3</p>
+                        <input id="slider" class="size-slider" type="range" value="3" min="3" max="5" step="1">
                     </div>
                 </div>
     

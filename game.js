@@ -14,6 +14,14 @@ const Player = (sign) => {
 
 const Gameboard = (() => {
     let _board = Array(9).fill(0);
+    let _size = 3;
+
+    const updateSize = (newSize) => {
+        _board = Array(newSize**2).fill(0);
+        _size = newSize;
+    }
+
+    const getSize = () => _size;
 
     const getBoard = () => _board;
     
@@ -42,7 +50,7 @@ const Gameboard = (() => {
         };
     };
 
-    return { getBoard, getCell, setCell, getEmptyCells, clear };
+    return { updateSize, getSize, getBoard, getCell, setCell, getEmptyCells, clear };
 })();
 
 const GameLogic = (() => {
@@ -54,6 +62,12 @@ const GameLogic = (() => {
     const _bot = Player("o");
 
     let pause = false;
+
+    const updateBoardSize = (newSize) => {
+        Gameboard.updateSize(parseInt(newSize));
+
+        restart();
+    }
 
     const changePlayerSign = (newSign) => {
         if (pause) return;
@@ -70,25 +84,40 @@ const GameLogic = (() => {
     }
 
     const _checkRows = () => {
-        for (let i = 0; i < 3; i++) {
-            const row = Gameboard.getBoard().slice(i * 3, i * 3 + 3);
+        const size = Gameboard.getSize();
+        for (let i = 0; i < size; i++) {
+            const row = Gameboard.getBoard().slice(i * size, size * (i + 1));
             if (row.every((cell) => cell == "x") || row.every((cell) => cell == "o")) return true;
         }
         return false;
     }
 
     const _checkColumns = () => {
-        for (let i = 0; i < 3; i++) {
-            const column = Gameboard.getBoard().filter((_, j) => (j - i) % 3 === 0);
+        const size = Gameboard.getSize();
+        for (let i = 0; i < size; i++) {
+            const column = Gameboard.getBoard().filter((_, j) => (j - i) % size === 0);
             if (column.every((cell) => cell == "x") || column.every((cell) => cell == "o")) return true;
         }
         return false;
     }
 
     const _checkDiagonals = () => {
+        const size = Gameboard.getSize();
+        
         const board = Gameboard.getBoard();
-        const d1 = [board[0], board[4], board[8]];
-        const d2 = [board[2], board[4], board[6]];
+        const d1 = board.filter((_, j) => j % (size + 1) === 0);
+        const d2 = board.filter((_, j) => (j % (size - 1) === 0 && j !== 0 && j !== size**2 - 1));
+        // const d1 = [board[0], board[4], board[8]];
+        // const d2 = [board[2], board[4], board[6]];
+        // [0,1,2]
+        // [3,4,5]
+        // [6,7,8]
+
+        // [ 0, 1, 2, 3, 4]
+        // [ 5, 6, 7, 8, 9]
+        // [10,11,12,13,14]
+        // [15,16,17,18,19]
+        // [20,21,22,23,24]
 
         if (d1.every((cell) => cell == "x") || d1.every((cell) => cell == "o")) return true;
         if (d2.every((cell) => cell == "x") || d2.every((cell) => cell == "o")) return true;
@@ -176,7 +205,8 @@ const GameLogic = (() => {
         if (pause) return;
 
         Gameboard.clear();
-        DisplayController.clear();
+        DisplayController.clearBoard();
+        DisplayController.populateBoard();
 
         screenBlur.classList.remove("active");
         endScreen.classList.remove("active");
@@ -184,34 +214,86 @@ const GameLogic = (() => {
         if (_player.getSign() === "o") botStep();
     }
 
-    return { changePlayerSign, playerStep, botStep, restart };
+    return { updateBoardSize, changePlayerSign, playerStep, botStep, restart };
 })();
 
 const DisplayController = (() => {
-    const cells = document.querySelectorAll(".cell");
+    const board = document.getElementById("board");
+    // const cells = document.querySelectorAll(".cell");
     const restart = document.getElementById("restart-btn");
     const x = document.getElementById("x-btn");
     const o = document.getElementById("o-btn");
 
+    const sizeSlider = document.getElementById("slider");
+    const sliderText = document.getElementById("slider-text");
+
     const retryBtn = document.getElementById("retry-btn");
 
-    const clear = () => {
-        for (let cell of cells) {
-            cell.firstChild.classList = [];
+    // const clear = () => {
+    //     for (let cell of cells) {
+    //         cell.firstChild.classList = [];
+    //     }
+    // }
+
+    const populateBoard = () => {
+        const size = Gameboard.getSize();
+        board.style.gridTemplate = `repeat(${size}, 1fr) / repeat(${size}, 1fr)`;
+
+        for (let i = 0; i < size**2; i++) {
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+            const cellIcon = document.createElement("i");
+
+            if (i == 0) {
+                cell.style.borderTopLeftRadius = "var(--br)";
+            } else if (i == size - 1) {
+                cell.style.borderTopRightRadius = "var(--br)";
+            } else if (i == size * (size - 1)) {
+                cell.style.borderBottomLeftRadius = "var(--br)";
+            } else if (i == size**2 - 1) {
+                cell.style.borderBottomRightRadius = "var(--br)";
+            }
+
+            cell.appendChild(cellIcon);
+            board.appendChild(cell);
+
+            cell.addEventListener("click", GameLogic.playerStep.bind(null, i))
         }
     }
 
-    for (let i = 0; i < cells.length; i++) {
-        cells[i].onclick = GameLogic.playerStep.bind(null, i);
+    const clearBoard = () => {
+        // const cells = document.querySelectorAll(".cell");
+        // cells.forEach((cell) => cell.removeEventListener("click"));
+
+        board.innerHTML = "";
     }
 
+    const updateSlider = () => {
+        const min = sizeSlider.min;
+        const max = sizeSlider.max;
+        const val = sizeSlider.value;
+        
+        sizeSlider.style.backgroundSize = (val - min) * 100 / (max - min) + "% 100%";
+        sliderText.textContent = `${val}x${val}`;
+
+        GameLogic.updateBoardSize(val);
+    }
+    
+    // for (let i = 0; i < cells.length; i++) {
+    //     cells[i].onclick = GameLogic.playerStep.bind(null, i);
+    // }
+    
     restart.onclick = GameLogic.restart;
     x.onclick = GameLogic.changePlayerSign.bind(null, "x");
     o.onclick = GameLogic.changePlayerSign.bind(null, "o");
-
+    
     retryBtn.onclick = GameLogic.restart;
+    
+    sizeSlider.oninput = updateSlider;
 
-    return { clear };
+    return { populateBoard, clearBoard, updateSlider };
 })();
 
 GameLogic.changePlayerSign("x");
+
+DisplayController.updateSlider();
